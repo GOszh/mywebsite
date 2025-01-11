@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+
+        /* Ensure images scale proportionally */
+        img {
+            width: 100%; /* Image takes up the full width of its container */
+            max-width: 900px; /* Limit the maximum width */
+            height: auto; /* Maintain aspect ratio */
+            object-fit: cover; /* Ensure the image fits its container without distortion */
+        }
+
+        /* For images in the Lightbox */
+        #lightbox-image-container img {
+            width: auto; /* Let the width adjust automatically */
+            max-width: 90%; /* Limit width to 90% of the screen */
+            max-height: 80%; /* Limit height to 80% of the screen */
+            height: auto; /* Maintain aspect ratio */
+            object-fit: contain; /* Ensure the image fits within the Lightbox */
+        }
+
+        .gallery {
+            display: flex;
+            flex-direction: column; /* Stack images vertically */
+            align-items: center; /* Center-align images */
+            gap: 20px; /* Add space between images */
+            padding: 20px;
+        }
+
+        #lightbox {
+            display: flex;
+            flex-direction: column; /* Adjust content in Lightbox */
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Table of Contents Styles */
+        #table-of-contents {
+            position: fixed; /* Keep it fixed on the screen */
+            top: 20px; /* Distance from the top */
+            left: 20px; /* Distance from the left */
+            background-color: #111; /* Dark background */
+            color: white; /* White text */
+            border: 1px solid #333; /* Subtle border */
+            border-radius: 5px; /* Rounded corners */
+            padding: 15px; /* Padding inside the box */
+            width: 200px; /* Width of the TOC box */
+            z-index: 1000; /* Ensure it stays above other content */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+            font-size: 14px; /* Font size */
+        }
+
+        #table-of-contents h3 {
+            margin: 0 0 10px 0; /* Add space below the heading */
+            font-size: 16px; /* Slightly larger heading */
+            text-align: center; /* Center the heading text */
+        }
+
+        #table-of-contents ul {
+            list-style: none; /* Remove bullet points */
+            margin: 0;
+            padding: 0;
+        }
+
+        #table-of-contents li {
+            margin: 10px 0; /* Add space between list items */
+        }
+
+        #table-of-contents a {
+            color: white; /* White text for links */
+            text-decoration: none; /* Remove underline */
+            transition: color 0.3s ease; /* Smooth hover effect */
+        }
+
+        #table-of-contents a:hover {
+            color: #ddd; /* Lighter color on hover */
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            background-color: #111;
+            border-bottom: 1px solid #333;
+            margin-top: 40px; /* Add spacing between headers */
+        }
+
+        /* Header Section Styles */
+        header h1 {
+            margin: 0;
+            font-size: 36px;
+            color: #fff;
+        }
+
+        header h2 {
+        font-size: 28px;
+        margin: 0;
+        }
+
+        .gallery {
+            display: flex;
+            flex-direction: column; /* Stack images vertically */
+            align-items: center; /* Center align the images */
+            gap: 30px; /* Space between images */
+            padding: 20px;
+        }
+
+        .gallery p {
+            text-align: left; /* Align text to the left */
+            width: 50%; /* Match image width */
+            margin: 0 0 10px 0; /* Add spacing below the paragraph */
+            padding: 0; /* Remove extra padding */
+        }
+
+        .image-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .image-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            z-index: 1;
+        }
+
+        /* Prevent Image Download */
+        .gallery img {
+            pointer-events: none; /* Disable interactions */
+            -webkit-touch-callout: none; /* Disable long-press save on iOS Safari */
+            user-select: none; /* Prevent text/image selection */
+        }
+
+        img {
+            -webkit-user-drag: none; /* Disable image dragging on WebKit browsers */
+            user-drag: none; /* Disable image dragging on other browsers */
+        }
+
+        .gallery img {
+            width: 90%; /* Increase width for larger display */
+            max-width: 900px; /* Allow images to grow wider on larger screens */
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+
+            -webkit-touch-callout: none; /* Disable long-press save on iOS Safari */
+            -webkit-user-drag: none; /* Prevent image dragging on WebKit browsers */
+            user-drag: none; /* Prevent image dragging on other browsers */
+            user-select: none; /* Prevent text/image selection */
+        }
+
+        .gallery img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Prevent Right-Click Context Menu */
+        body {
+            -webkit-touch-callout: none; /* Disable text/image selection on touch devices */
+            user-select: none; /* Disable text/image selection */
+        }
+
+        /* Lightbox Overlay */
+        #lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            grid-template-columns: 50% 50%; /* 70% image, 30% description */
+            align-items: center; /* Vertically center content */
+        }        
+
+        #lightbox-image-container {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+            height: 100%; /* Reserve 80% height for the image */
+            padding: 100px;tt
+        }
+
+        #lightbox-image-container img {
+            max-width: 80%;
+            max-height: 80%;
+            border-radius: 8px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7);
+
+            -webkit-touch-callout: none; /* Disable long-press save on mobile */
+            -webkit-user-drag: none; /* Prevent dragging */
+            user-drag: none;
+            user-select: none; /* Prevent selection */
+        }
+        
+        #lightbox-description {
+            position: absolute; /* Use absolute positioning */
+            top: 60%; /* Move it slightly below the center */
+            right: 100px; /* Keep it on the right side */
+            color: #fff;
+            font-size: 16px;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.6); /* Optional darker background for contrast */
+            border-radius: 8px; /* Optional rounded corners */
+            max-width: 300px; /* Limit the description's width */
+            text-align: right; /* Align text to the right */
+        }
+
+        #lightbox-description-text {
+            text-align: right; /* Align text to the right */
+            font-style: italic; /* Make the text italic */
+            font-size: 16px; /* Use a smaller font size */
+            line-height: 1.5; /* Adjust line height for better readability */
+            color: #fff; /* Ensure the text color is white for contrast */
+            margin: 0; /* Remove any default margin */
+        }
+
+        #lightbox .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 30px;
+            color: #fff;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            z-index: 2000; /* Ensure the close button is on top */
+        }
+
+        #lightbox .close-btn:hover {
+            background: rgba(255, 0, 0, 0.8);
+        }
+
+        #back-to-top {
+            position: fixed; /* Stays in a fixed position on the screen */
+            bottom: 70px; /* Distance from the bottom */
+            right: 20px; /* Distance from the right */
+            z-index: 1000; /* Ensure it stays above other elements */
+            background-color: #444; /* Dark background */
+            color: white; /* White text */
+            border: none; /* Remove border */
+            border-radius: 5px; /* Rounded corners */
+            padding: 10px 15px; /* Button padding */
+            font-size: 14px; /* Font size */
+            cursor: pointer; /* Pointer cursor on hover */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+            display: none; /* Hidden by default */
+            transition: opacity 0.3s; /* Smooth fade-in effect */
+        }
+
+        #back-to-top:hover {
+            background-color: #222; /* Darker background on hover */
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px 0;
+            background-color: #111;
+            color: #fff;
+            font-size: 14px;
+            border-top: 1px solid #333;
+        }
+    </style>
+</head>
+
+
+<body oncontextmenu="return false;">
+    <header>
+        <h1>Negative 24</h1>
+        <p>To see, to inspire, to draw closer</p>
+    </header>
+
+    <!-- Floating Table of Contents 
+    <nav id="table-of-contents">
+        <h3>Years of Collection</h3>
+        <ul>
+            <li><a href="#year-2025">2025 Season</a></li>
+            <li><a href="#year-2024">2024 Season</a></li>
+        </ul>
+    </nav>
+    -->
+
+    <!-- .................................2025 Season ................................-->
+    <!-- Page Content -->
+    <header id="year-2025">
+        <h2>2025 Season</h2>
+    </header>
+    
+    <div class="gallery">
+        <!-- Replace these with your own image paths -->
+        <p>"In the Dark"</p>
+        <img src="photo_collection/2025/Dark, Woods.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Darkness in Woods')">
+        
+        <p>"New Year Vibe"</p>
+        <img src="photo_collection/2025/Rainbow2025.jpg" alt="Photo 2"
+        onclick="openLightbox(this.src, 'A Good Year')">
+        <p>  </p>
+    </div>
+
+    <!-- .................................2024 Season ................................-->
+    <!-- Page Content -->
+    <header id="year-2024">
+        <h2>2024 Season</h2>
+    </header>
+
+    <div class="gallery">
+        <!-- Replace these with your own image paths -->
+        <p>"Post Ice Age"</p>
+        <img src="photo_collection/2024/Look into the Eye.jpg" alt="Photo 1" 
+        onclick="openLightbox(this.src, 'A Closer Look Into the Eyes')">
+        <img src="photo_collection/2024/DSC00235.jpg" alt="Photo 2" 
+        onclick="openLightbox(this.src, 'Ice Field...')">
+        <img src="photo_collection/2024/Ice Field.jpg" alt="Photo 3" 
+        onclick="openLightbox(this.src, 'Walking on Ice')">
+
+        <p>"Curvature"</p>
+        <img src="photo_collection/2024/AGO_stair_curvature.jpg" alt="Photo 3" 
+        onclick="openLightbox(this.src, 'Endless...')">
+        <img src="photo_collection/2024/AGO_Curvature.jpg" alt="Photo 4" 
+        onclick="openLightbox(this.src, 'Stairs, Railings, Steps')">
+        <img src="photo_collection/2024/AGO_Curvature_yilin.jpg" alt="Photo 5" 
+        onclick="openLightbox(this.src, 'A Gentle Touch')">
+
+        <p>"Along CA East Coast"</p>
+        <img src="photo_collection/2024/Nova_Peggy.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Awaiting...')">
+        <img src="photo_collection/2024/Golden_at_Cape.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Awaiting...')">
+        <img src="photo_collection/2024/Novascotia_Sunset.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Sunset, Ocean, Sky')">
+
+        <p>"Northern Light: 6.5 KP @ 2024.08.12"</p>
+        <img src="photo_collection/2024/NorthernLight_new1.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Dark Magic Show')">
+        <img src="photo_collection/2024/Northerlight_butterfly.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Oops, Oops!!')">
+        <img src="photo_collection/2024/Northerlight_butterfly2.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Oops, Oops!!')">
+        
+        <p>"Chihuly"</p>
+        <img src="photo_collection/2024/Chihuly_glass_yellow&white.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Oops, Oops!!')">
+        <img src="photo_collection/2024/Chihuly_glass_white&black.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Oops, Oops!!')">
+        <img src="photo_collection/2024/Chihuly_glass_blue&green.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Dark Magic Show')">
+        <img src="photo_collection/2024/Chihuly_glass_umbrella.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Oops!')">
+        <img src="photo_collection/2024/RedFlowers.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Oops!')">
+
+        <p>"Northern Light: 8.0 KP @ 2024.05.11"</p>
+        <img src="photo_collection/2024/NorthernLight_Feast.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Dancing in the Dark')">
+
+        <p>"Go Gentle Into the Night"</p>
+        <img src="photo_collection/2024/Full_Moon.jpg" alt="Photo 6" 
+        onclick="openLightbox(this.src, 'A planet, a known, an unknown')">
+        <p>  </p>
+    </div>
+
+    <!-- .................................2023 Season ................................-->
+    <!-- Page Content -->
+    <header id="year-2023">
+        <h2>2023 Season</h2>
+    </header>
+    
+    <div class="gallery">
+        <!-- Replace these with your own image paths -->
+        <p>"Jasper Safari"</p>
+        <img src="photo_collection/2023/Ababy_2023.jpg" alt="Photo 1"
+        onclick="openLightbox(this.src, 'Darkness in Woods')">
+        <img src="photo_collection/2023/TheBeard_2023.jpg" alt="Photo 2"
+        onclick="openLightbox(this.src, 'A Good Year')">
+        <img src="photo_collection/2024/ShyDeer.jpg" alt="Photo 2"
+        onclick="openLightbox(this.src, 'A Good Year')">
+        <img src="photo_collection/2023/GoatLeader_2023.jpg" alt="Photo 2"
+        onclick="openLightbox(this.src, 'A Good Year')">
+        <p>  </p>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox">
+        <button class="close-btn" onclick="closeLightbox()">×</button>
+        <div id="lightbox-image-container">
+            <img src="" alt="Preview">
+        </div>
+        <div id="lightbox-description">
+            <p id="lightbox-description-text"></p>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 Shuai Zehua. All Rights Reserved.</p>
+    </footer>
+
+    <!------------------------------------ JavaScript ------------------------------->
+
+    <script>
+        // Smooth scrolling for Table of Contents links
+        document.querySelectorAll('#table-of-contents a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+        });
+
+        // Show the button when the user scrolls down
+        window.onscroll = function () {
+            const backToTopButton = document.getElementById('back-to-top');
+            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+                backToTopButton.style.display = 'block'; // Show the button
+            } else {
+                backToTopButton.style.display = 'none'; // Hide the button
+            }
+        };
+
+        // Scroll smoothly to the top of the page
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth' // Smooth scrolling
+            });
+        }
+
+        // Disable right-click context menu for images
+        document.addEventListener('contextmenu', function (event) {
+            if (event.target.tagName === 'IMG') {
+                event.preventDefault(); // Prevent right-click on images
+            }
+        });
+
+        // Open Lightbox
+        function openLightbox(src, description) {
+            console.log('openLightbox triggered:', src, description); // Debug log
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = lightbox.querySelector('#lightbox-image-container img');
+            const lightboxDescription = document.getElementById('lightbox-description-text');
+
+            lightboxImage.src = src; // Set the source of the lightbox image
+            lightboxDescription.textContent = description; // Set the description text
+            lightbox.style.display = 'flex'; // Show the lightbox
+        }
+
+        // Close Lightbox
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            console.log('closeLightbox triggered'); // Debug log
+            lightbox.style.display = 'none'; // Hide the lightbox
+        }
+    </script>
+    
+    <!-- Back to Top Button -->
+    <button id="back-to-top" onclick="scrollToTop()">↑ Back to Top</button>
+
+</body>
+</html>
